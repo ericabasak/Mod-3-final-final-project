@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Wine and Chocolate Pairing</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+<script src="index.js"></script>
+<body>
+
+  <header>
+    <h1>DarkRose</h1>
+    <h2>Wine & Chocolate Pairing</h2>
+    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcS4ChZ_e6OG7rZAmODOYwtJAAQGQRGSelRsQwFRsNzxPeXwoT3K">
+  </header>
+
+  <button id="wine-btn">Wine</button>
+  <button id="chocolate-btn">Chocolate</button>
+  
+  <br>
+  <br>
+  
+  <form action="">
+    <select id="wine-section" class="hidden"></select>
+    <select id="chocolate-section" class="hidden"></select>
+    <br><br>
+    <button id="newPairing">Create New Pairing</button>
+  </form>
+
+  <div id="p" class="new-pairing">
+    <h3>New Pairing</h3>
+      
+  </div>
+
+  <ul id="pairings"></ul>
+  
+  <div id="list" class="new-pairing">
+    <h3>Create New Pairing</h3>
+    <form id="pairing-form" action="">
+      <button id="pairing">Create New Pairing</button>
+      <br></br>
+      <input type="text" name="comment" id="pairing" placeholder="New pairing here" cols="30" rows="10">
+    </form>
+  </div>
+
+</body>
+</html>
+
+
+
+
+<!-- rails new darkrose --api --database=postgresql
+
+rails g resource Api::V1::Wine 
+rails g resource Api::V1::Chocolate 
+rails g resource Api::V1::Pairing  -->

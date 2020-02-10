@@ -8,27 +8,73 @@
 
 Wine.destroy_all;
 Chocolate.destroy_all;
-
-10.times do
-
-  Wine.create({
-      name: Faker::Beer.name,
-      year: Faker::Number.within(range: 1960..1999)
-  });
-
-  Chocolate.create({
-      name: Faker::Dessert.variety,
-      cocoaPercentage: Faker::Number.number(digits: 2),
-      fairTrade: Faker::Boolean.boolean
-  });
-
-end
+Pairing.destroy_all;
 
 
-# 5.times do
-#   Chocolate.create({
-#     name: Faker::Dessert.name
-#     cocoaPercentage: Faker::Number.number(digits: 2),
-#     fairTrade: Faker::Boolean.boolean
-#   })
-# end
+  Wine.create([
+    {
+      "name": "Pinot Noir",
+      "year": 1980
+    },
+    {
+      "name": "Cabernet Sauvignon",
+      "year": 1990
+    },
+    {
+      "name": "Syrah",
+      "year": 2000
+    },
+    {
+      "name": "Zinfandel",
+      "year": 2016
+    },
+    {
+      "name": "Chardonnay",
+      "year": 2016
+    },
+    {
+      "name": "Sauvignon Blanc",
+      "year": 1999
+    },
+    {
+      "name": "Pinot Gris",
+      "year": 1990
+    },
+    {
+      "name": "Riesling",
+      "year": 2014
+    }
+  ]
+  );
+
+
+
+
+  Chocolate.create([
+    {
+      "name": "Dark",
+      "cocoaPercentage": 75,
+      "fairTrade": true
+    },
+    {
+      "name": "Milk",
+      "cocoaPercentage": 10,
+      "fairTrade": true
+    },
+    {
+      "name": "White",
+      "cocoaPercentage": 20,
+      "fairTrade": true
+    },
+    {
+      "name": "Bittersweet",
+      "cocoaPercentage": 70,
+      "fairTrade": true
+    },
+    {
+      "name": "Ruby",
+      "cocoaPercentage": 4,
+      "fairTrade": true
+    }
+    ]
+  );

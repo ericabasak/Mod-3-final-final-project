@@ -2,7 +2,6 @@ class Controller {
   constructor() {
     this.ulSection = document.getElementById("pairings")
   }
-  
 
   showWineDropdown() {
     document.querySelector("#wine-section").classList.toggle('hidden');
@@ -57,7 +56,6 @@ class Controller {
       return resp.json()
     })
     .then(function(data){
-
       console.log(data);
       that.ulSection.innerHTML = "";
           for(let i=0; i< data.wines.length; i++) {
@@ -70,7 +68,11 @@ class Controller {
             heartBtn.dataset.id = "Like Button"
             deleteBtn.dataset.id = "Delete Button"
             liElem.innerHTML = w.name + " goes well with " + c.name + "!"
-            heartBtn.innerHTML = `❤️ <span>0</span> Likes`;
+            let like = 0;
+            if (data.likes[i]) {
+              like = data.likes[i]
+            }
+            heartBtn.innerHTML = `❤️ <span>${like}</span> Likes`;
             deleteBtn.innerText = "Delete"
             that.ulSection.appendChild(liElem);
             liElem.append(heartBtn)
@@ -79,44 +81,40 @@ class Controller {
       })
   }
 
-
-handleCreateNewPairBtn() {
-  const newBtn = document.querySelector("#newPairing")
-  newBtn.addEventListener("click", function(event) {
-    event.preventDefault();
-    const newWValue = document.querySelector("#wine-section").value
-    const newCValue = document.querySelector("#chocolate-section").value
-    fetch("http://localhost:3000/api/v1/pairings", 
-    {
-      method: "POST",
-      headers: 
+  handleCreateNewPairBtn() {
+    let that = this;
+    const newBtn = document.querySelector("#newPairing")
+    newBtn.addEventListener("click", function(event) {
+      console.log(that.ulSection);
+      event.preventDefault();
+      const newWValue = document.querySelector("#wine-section").value
+      const newCValue = document.querySelector("#chocolate-section").value
+      fetch("http://localhost:3000/api/v1/pairings", 
       {
-        "Content-Type": "application/json",
-        "Accept": "application/json"
-      },
-      body: JSON.stringify({
-        wine: newWValue,
-        chocolate: newCValue
+        method: "POST",
+        headers: 
+        {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify({
+          wine: newWValue,
+          chocolate: newCValue
+        })
+        
       })
-      
+      .then(function(resp) {
+        console.log("success", resp)
+        that.fetch_pairings()
+      })
     })
-    // .then(function(resp){
-    //   console.log("success", resp)
-    //   fetch_pairings()
-    // })
-  })
+  }
 }
-
-
-}
-
-
-
 
 window.addEventListener('DOMContentLoaded', function() {
   console.log("page loaded from script");
 
-  c = new Controller()
+  let c = new Controller()
   c.showWineDropdown()
   c.showChocolateDropdown()
   c.fetch_wines()
@@ -124,89 +122,67 @@ window.addEventListener('DOMContentLoaded', function() {
   c.fetch_pairings()
   c.handleCreateNewPairBtn()
 
-  // const form = document.querySelector("#pairing-form")
-  // const list = document.querySelector("#list")
-  // form.addEventListener("submit", function(e) {
-  //   e.preventDefault();
-  //   // console.log(e.target.comment.value);
-  //   const createNewPairing = e.target.comment.value;
-    
-  //   const newList = document.querySelector("#list")
-  //   list.insertAdjacentHTML("beforeend", `<li>${createNewPairing}</li>`)
-  //   e.target.reset();
-  // })
-
-  
-
- 
-
-  document.querySelector("#wine-btn").addEventListener('click', e => {
+  document.querySelector("#wine-btn").addEventListener('click',  e => {
     e.preventDefault();
-    showWineDropdown();
+    c.showWineDropdown();
   });
 
   document.querySelector("#chocolate-btn").addEventListener('click', e => {
     e.preventDefault();
-    showChocolateDropdown();
+    c.showChocolateDropdown();
   });
 
+  // get the delete button to delete an individual pairing
+  let parentUl = document.querySelector("#pairings");
+  parentUl.addEventListener("click", e => {
+    if(e.target.dataset.id === "Delete Button") {
+      // console.log(e.target.parentNode.getAttribute("pairing_id"))
+      console.log(e) //#1
+      let targetObj = e.target
+      let parentLI = targetObj.parentNode
+      console.log(parentLI)
+      e.target.parentNode.remove()
+      deletePairing(e.target.parentNode.getAttribute("pairing_id"))
+    } else if (e.target.dataset.id === "Like Button"){
+      let likeNum = parseInt(e.target.getElementsByTagName("span")[0].innerHTML);
+      likeNum = likeNum + 1
+      e.target.getElementsByTagName("span")[0].innerHTML = likeNum
+    }
+    
+    console.log(e.target.parentNode) //#2
+    pairingLikes(e.target.parentNode.getAttribute('pairing_id'), 
+    e.target.childNodes[0].innerHTML)
+  })
 
-
-// get the delete button to delete an individual pairing
-let parentUl = document.querySelector("#pairings");
-parentUl.addEventListener("click", e => {
-  if(e.target.dataset.id === "Delete Button") {
-    // console.log(e.target.parentNode.getAttribute("pairing_id"))
-    console.log(e) //#1
-    let targetObj = e.target
-    console.log(targetObj) //#2
-    let parentLI = targetObj.parentNode
-    console.log(parentLI)
-    e.target.parentNode.remove()
-    deletePairing(e.target.parentNode.getAttribute("pairing_id"))
-  } else if (e.target.dataset.id === "Like Button"){
-    let likeNum = parseInt(e.target.getElementsByTagName("span")[0].innerHTML);
-    likeNum = likeNum + 1
-    e.target.getElementsByTagName("span")[0].innerHTML = likeNum
+  // delete pairing function
+  function deletePairing(id) {
+    let btn = document.querySelector("#delete")
+    fetch(`http://localhost:3000/api/v1/pairings/${id}`, 
+    {
+      method: "DELETE",
+      headers: 
+      {
+        "Content-Type": "application/json",
+        "Accepts": "application/json"
+      },
+    })
   }
-  pairingLikes(e.target.dataset.id, e.target.getElementsByTagName("span")[0].innerHTML)
-})
 
 
-
-
-// delete pairing function
-function deletePairing(id) {
-  let btn = document.querySelector("#delete")
-  fetch(`http://localhost:3000/api/v1/pairings/${id}`, 
-  {
-    method: "DELETE",
-    headers: 
-    {
-      "Content-Type": "application/json",
-      "Accepts": "application/json"
-    },
-  })
-}
-
-
-// persist the likes to the database
-function pairingLikes(id, likes) {
-  fetch(`http://localhost:3000/api/v1/pairings/${id}`, {
-    method: "PATCH",
-    headers: 
-    {
-      "Content-Type": "application/json",
-      "Accepts": "application/json"
-    },
-    body: JSON.stringify({likes: likes})
-  })
-  .then(function(response) {
-    return response.json()
-  })
-}
-
-
-
+  // persist the likes to the database
+  function pairingLikes(id, likes) {
+    fetch(`http://localhost:3000/api/v1/pairings/${id}`, {
+      method: "PATCH",
+      headers: 
+      {
+        "Content-Type": "application/json",
+        "Accepts": "application/json"
+      },
+      body: JSON.stringify({likes: likes})
+    })
+    .then(function(response) {
+      return response.json()
+    })
+  }
 // THE END
 });

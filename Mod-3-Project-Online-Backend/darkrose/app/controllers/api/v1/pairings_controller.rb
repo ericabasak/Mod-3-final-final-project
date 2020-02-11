@@ -1,23 +1,27 @@
 
 class Api::V1::PairingsController < ApplicationController
   def index
-    print "index called"
+    # print "index called"
     pairings = Pairing.all
     wines = []
     chocolates = []
     ids = []
-    pairings.each do |p|
-      w1 = Wine.find_by(id: p.wine_id)
-      print "AAAA ", p.wine_id
-      c1 = Chocolate.find_by(id: p.chocolate_id)
-      wines.push(w1)
-      chocolates.push(c1)
-      ids.push(p.id)
-    end
+    likes = []
+
+      pairings.each do |p|
+        w1 = Wine.find_by(id: p.wine_id)
+        # print "AAAA ", p.wine_id
+        c1 = Chocolate.find_by(id: p.chocolate_id)
+        wines.push(w1)
+        chocolates.push(c1)
+        ids.push(p.id)
+        likes.push(p.like)
+      end
     render json: {
       wines: wines,
       chocolates: chocolates,
-      ids: ids
+      ids: ids,
+      likes: likes
     }
   end
 
@@ -36,8 +40,14 @@ class Api::V1::PairingsController < ApplicationController
     render json: p1
   end
 
-  def edit
+  def update
     pairing = Pairing.find(params[:id])
+    if (pairing.like == nil) 
+      pairing.like = 0  
+    end
+    pairing.like = pairing.like + 1
+    pairing.save!
+    render json: pairing
   end
   
   def destroy

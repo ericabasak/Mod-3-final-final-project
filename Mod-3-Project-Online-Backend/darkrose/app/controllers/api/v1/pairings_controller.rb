@@ -1,7 +1,6 @@
 
 class Api::V1::PairingsController < ApplicationController
   def index
-    # print "index called"
     pairings = Pairing.all
     wines = []
     chocolates = []
@@ -10,7 +9,6 @@ class Api::V1::PairingsController < ApplicationController
 
       pairings.each do |p|
         w1 = Wine.find_by(id: p.wine_id)
-        # print "AAAA ", p.wine_id
         c1 = Chocolate.find_by(id: p.chocolate_id)
         wines.push(w1)
         chocolates.push(c1)

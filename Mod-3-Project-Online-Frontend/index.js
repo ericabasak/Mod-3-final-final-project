@@ -1,6 +1,9 @@
 class Controller {
   constructor() {
+
+    // class variable - any class function can access
     this.ulSection = document.getElementById("pairings")
+    this.pairing_id = "pairing_id"
   }
 
   showWineDropdown() {
@@ -17,7 +20,7 @@ class Controller {
     .then((response) => {
       return response.json();
     })
-    .then((data) => {
+    .then((data) => { 
       let selectElem = document.getElementById("wine-section");
       data.forEach(function(e) {
         let optionElem = document.createElement('option');
@@ -64,7 +67,7 @@ class Controller {
             let liElem = document.createElement("li");
             let heartBtn = document.createElement("button");
             let deleteBtn = document.createElement("button");
-            liElem.setAttribute("pairing_id", data.ids[i]);
+            liElem.setAttribute(that.pairing_id, data.ids[i]);
             heartBtn.dataset.id = "Like Button"
             deleteBtn.dataset.id = "Delete Button"
             liElem.innerHTML = w.name + " goes well with " + c.name + "!"
@@ -85,7 +88,6 @@ class Controller {
     let that = this;
     const newBtn = document.querySelector("#newPairing")
     newBtn.addEventListener("click", function(event) {
-      console.log(that.ulSection);
       event.preventDefault();
       const newWValue = document.querySelector("#wine-section").value
       const newCValue = document.querySelector("#chocolate-section").value
@@ -101,7 +103,6 @@ class Controller {
           wine: newWValue,
           chocolate: newCValue
         })
-        
       })
       .then(function(resp) {
         console.log("success", resp)
@@ -110,8 +111,9 @@ class Controller {
     })
   }
 }
+// end of class
 
-window.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function() {
   console.log("page loaded from script");
 
   let c = new Controller()
@@ -132,26 +134,22 @@ window.addEventListener('DOMContentLoaded', function() {
     c.showChocolateDropdown();
   });
 
-  // get the delete button to delete an individual pairing
+  // get the delete button to delete an individual pairing OR increase the likes
   let parentUl = document.querySelector("#pairings");
   parentUl.addEventListener("click", e => {
     if(e.target.dataset.id === "Delete Button") {
       // console.log(e.target.parentNode.getAttribute("pairing_id"))
-      console.log(e) //#1
       let targetObj = e.target
       let parentLI = targetObj.parentNode
-      console.log(parentLI)
       e.target.parentNode.remove()
       deletePairing(e.target.parentNode.getAttribute("pairing_id"))
     } else if (e.target.dataset.id === "Like Button"){
       let likeNum = parseInt(e.target.getElementsByTagName("span")[0].innerHTML);
       likeNum = likeNum + 1
       e.target.getElementsByTagName("span")[0].innerHTML = likeNum
-    }
-    
-    console.log(e.target.parentNode) //#2
-    pairingLikes(e.target.parentNode.getAttribute('pairing_id'), 
-    e.target.childNodes[0].innerHTML)
+      pairingLikes(e.target.parentNode.getAttribute('pairing_id'), 
+      e.target.childNodes[0].innerHTML)
+    }    
   })
 
   // delete pairing function
@@ -168,8 +166,7 @@ window.addEventListener('DOMContentLoaded', function() {
     })
   }
 
-
-  // persist the likes to the database
+  // persist the likes to the database 
   function pairingLikes(id, likes) {
     fetch(`http://localhost:3000/api/v1/pairings/${id}`, {
       method: "PATCH",

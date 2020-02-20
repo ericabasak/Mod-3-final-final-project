@@ -1,6 +1,5 @@
 class Controller {
   constructor() {
-
     // class variable - any class function can access
     this.ulSection = document.getElementById("pairings")
     this.pairing_id = "pairing_id"
@@ -15,7 +14,7 @@ class Controller {
   }
 
   // fetch all wines
-   fetch_wines() {
+   fetchWines() {
     fetch('http://localhost:3000/api/v1/wines')
     .then((response) => {
       return response.json();
@@ -36,7 +35,7 @@ class Controller {
   }
 
   // fetch all the chocolates
-  fetch_chocolates() {
+  fetchChocolates() {
     fetch('http://localhost:3000/api/v1/chocolates')
     .then((response) => {
       return response.json();
@@ -52,33 +51,48 @@ class Controller {
   };
 
   // fetch all wine and chocolate pairings
-  fetch_pairings() {
+  fetchPairings(isSorted) {
     let that = this;
     fetch('http://localhost:3000/api/v1/pairings')
     .then(function(resp){
       return resp.json()
     })
-    .then(function(data){
+    .then(function(data) {
       console.log(data);
+      let allData = [];
+      for(let i=0; i< data.wines.length; i++) {
+        allData.push({
+          wine: data.wines[i],
+          chocolate: data.chocolates[i],
+          like: data.likes[i],
+          id: data.ids[i]
+        })
+      }
+      if (isSorted) {
+       allData.sort((a, b) => (a.like > b.like) ? -1 : 1)
+      }
+      console.log(allData);
       that.ulSection.innerHTML = "";
-          for(let i=0; i< data.wines.length; i++) {
-            let w = data.wines[i]
-            let c = data.chocolates[i]
-            let liElem = document.createElement("li");
+      for(let i=0; i< allData.length; i++) {
+            let w = allData[i].wine
+            let c = allData[i].chocolate
             let heartBtn = document.createElement("button");
             let deleteBtn = document.createElement("button");
-            liElem.setAttribute(that.pairing_id, data.ids[i]);
+            let liElem = document.createElement("li");
+            liElem.setAttribute(that.pairing_id, allData[i].id);
+
             heartBtn.dataset.id = "Like Button"
             deleteBtn.dataset.id = "Delete Button"
             liElem.innerHTML = w.name + " goes well with " + c.name + "!"
             let like = 0;
-            if (data.likes[i]) {
-              like = data.likes[i]
+            if (allData[i].like) {
+              like = allData[i].like
             }
-            heartBtn.innerHTML = `❤️ <span>${like}</span> Likes`;
+            // heartBtn.innerHTML = `❤️ <span>${like}</span> Likes`;
+            heartBtn.innerHTML = `<span>${like}</span>Likes`;
             deleteBtn.innerText = "Delete"
             that.ulSection.appendChild(liElem);
-            liElem.append(heartBtn)
+            liElem.append(heartBtn);
             liElem.append(deleteBtn);
           }
       })
@@ -106,54 +120,13 @@ class Controller {
       })
       .then(function(resp) {
         console.log("success", resp)
-        that.fetch_pairings()
+        that.fetchPairings(false)
       })
     })
   }
-}
-// end of class
-
-document.addEventListener('DOMContentLoaded', function() {
-  console.log("page loaded from script");
-
-  let c = new Controller()
-  c.showWineDropdown()
-  c.showChocolateDropdown()
-  c.fetch_wines()
-  c.fetch_chocolates()
-  c.fetch_pairings()
-  c.handleCreateNewPairBtn()
-
-  document.querySelector("#wine-btn").addEventListener('click',  e => {
-    e.preventDefault();
-    c.showWineDropdown();
-  });
-
-  document.querySelector("#chocolate-btn").addEventListener('click', e => {
-    e.preventDefault();
-    c.showChocolateDropdown();
-  });
-
-  // get the delete button to delete an individual pairing OR increase the likes
-  let parentUl = document.querySelector("#pairings");
-  parentUl.addEventListener("click", e => {
-    if(e.target.dataset.id === "Delete Button") {
-      // console.log(e.target.parentNode.getAttribute("pairing_id"))
-      let targetObj = e.target
-      let parentLI = targetObj.parentNode
-      e.target.parentNode.remove()
-      deletePairing(e.target.parentNode.getAttribute("pairing_id"))
-    } else if (e.target.dataset.id === "Like Button"){
-      let likeNum = parseInt(e.target.getElementsByTagName("span")[0].innerHTML);
-      likeNum = likeNum + 1
-      e.target.getElementsByTagName("span")[0].innerHTML = likeNum
-      pairingLikes(e.target.parentNode.getAttribute('pairing_id'), 
-      e.target.childNodes[0].innerHTML)
-    }    
-  })
 
   // delete pairing function
-  function deletePairing(id) {
+  deletePairing(id) {
     let btn = document.querySelector("#delete")
     fetch(`http://localhost:3000/api/v1/pairings/${id}`, 
     {
@@ -167,7 +140,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // persist the likes to the database 
-  function pairingLikes(id, likes) {
+  pairingLikes(id, likes) {
     fetch(`http://localhost:3000/api/v1/pairings/${id}`, {
       method: "PATCH",
       headers: 
@@ -181,5 +154,62 @@ document.addEventListener('DOMContentLoaded', function() {
       return response.json()
     })
   }
+
+  handleLikesAndDeletes() {
+    let that = this;
+    // get the delete button to delete an individual pairing OR increase the likes
+    let parentUl = document.querySelector("#pairings");
+    parentUl.addEventListener("click", e => {
+      console.log("clicked")
+
+      if(e.target.dataset.id === "Delete Button") {
+        // console.log(e.target.parentNode.getAttribute("pairing_id"))
+        let targetObj = e.target
+        let parentLI = targetObj.parentNode
+        e.target.parentNode.remove()
+        that.deletePairing(e.target.parentNode.getAttribute("pairing_id"))
+      } else if (e.target.dataset.id === "Like Button"){
+        let likeNum = parseInt(e.target.getElementsByTagName("span")[0].innerHTML);
+        likeNum = likeNum + 1
+        e.target.getElementsByTagName("span")[0].innerHTML = likeNum
+        that.pairingLikes(e.target.parentNode.getAttribute('pairing_id'), 
+        e.target.childNodes[0].innerHTML)
+      }    
+    })
+  }
+
+}
+// end of class
+
+document.addEventListener('DOMContentLoaded', function() {
+  console.log("page loaded from script");
+
+  let c = new Controller()
+  c.showWineDropdown()
+  c.showChocolateDropdown()
+  c.fetchWines()
+  c.fetchChocolates()
+  c.fetchPairings(false)
+  c.handleCreateNewPairBtn()
+  c.handleLikesAndDeletes()
+  addWineButtonHandler()
+
+  function addWineButtonHandler() {
+    document.querySelector("#wine-btn").addEventListener('click',  e => {
+      e.preventDefault();
+      c.showWineDropdown();
+    });
+  }
+
+  document.querySelector("#chocolate-btn").addEventListener('click', e => {
+    e.preventDefault();
+    c.showChocolateDropdown();
+  });
+
+  document.querySelector("#high-low-btn").addEventListener("click", e => {
+    e.preventDefault();
+    c.fetchPairings(true);
+  })
+
 // THE END
 });

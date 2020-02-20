@@ -33,7 +33,7 @@ class Api::V1::PairingsController < ApplicationController
     w1 = Wine.find_by(name: wine_name)
     chocolate_name = params[:chocolate]
     c1 = Chocolate.find_by(name: chocolate_name)
-    p1 = Pairing.create(wine: w1, chocolate: c1)
+    p1 = Pairing.create(wine: w1, chocolate: c1, like: 0)
     p1.save!
     render json: p1
   end
